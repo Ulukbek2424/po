@@ -1,0 +1,3 @@
+
+class ProductAndMenuCategoryDoesNotMatch(Exception):
+    pass

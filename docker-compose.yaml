@@ -1,0 +1,53 @@
+version: "3"
+services:
+
+  db:
+    restart: always
+    container_name: db
+    image: mysql/mysql-server:8.0
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:3307:3307"
+    expose:
+      - "3307"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    networks:
+      - db-net
+
+  backend:
+    restart: always
+    container_name: backend
+    env_file:
+      - .env
+    tty: true
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - .:/backend
+    networks:
+      - db-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5.0
+    environment:
+      - PMA_HOST=${MYSQL_HOST}
+      - PMA_PORT=${MYSQL_TCP_PORT}
+      - PMA_ARBITRARY=1
+      - PMA_ABSOLUTE_URL=/phpmyadmin/
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    restart: always
+    ports:
+      - "127.0.0.1:8080:80"
+    networks:
+      - db-net
+
+networks:
+  db-net:
+    driver: bridge
